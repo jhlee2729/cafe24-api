@@ -97,7 +97,7 @@ const createOrder = () => {
                     date_type:'pay_date',
                     offset:offset,
                     limit:limit,
-                    embed: 'items,receivers,buyer,cancellation',
+                    embed: 'items,receivers,buyer,return,cancellation,exchange',
                     order_status :'N00,N10,N20,N21,N22,C00,C10,C34,C36,C47,C48,C49,C40'
                   }
     
