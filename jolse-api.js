@@ -98,7 +98,7 @@ const lastCreateTimeTo = () => {
 
 const createOrder = () => {
     return new Promise((resolve,reject) => {
-        console.log(`${syncData.access_token}`,contents.start_date, contents.end_date);
+        // console.log(`${syncData.access_token}`,contents.start_date, contents.end_date);
 
         let offset = 0; // 최대 15000
         let limit = 1000;
@@ -132,8 +132,10 @@ const createOrder = () => {
                     insertData.createOrder = insertData.createOrder.concat(response.data.orders);
                     insertData.createOrderCount = insertData.createOrder.length;
 
+
                     // detail 저장
                     response.data.orders.forEach(element => {
+                        console.log(element.order_id)
                         element.items.forEach(i => {
                             i.order_id = element.order_id;
                             insertData.createOrderDetails = insertData.createOrderDetails.concat(i);
@@ -166,6 +168,7 @@ const createOrder = () => {
 }
 
 const databaseOrderInsert = (order,callback) => {
+
       // order insert
     const tomodel_order = {
         shop_no: syncData.shop_no,
@@ -174,7 +177,7 @@ const databaseOrderInsert = (order,callback) => {
         market_id: order.market_id,
         market_order_no: order.market_order_no,
         // postman : market_order_info, axios: 키값 없음
-        market_order_info: order.market_order_info,
+        market_order_info: order.market_order_info || '',
         member_id: order.member_id,
         member_email: order.member_email,
         member_authentication: order.member_authentication,
@@ -458,394 +461,330 @@ const databaseOrderDetailsInsert = (details, callback) => {
 
 const databaseOrderUpsert = (order, callback) => {
 
-      //order upsert
-    //   execute(`INSERT INTO app_jolse_order
-    //   (
-    //         currency,
-    //         order_id,
-    //         market_id,
-    //         market_order_no,
-    //         market_order_info,
-    //         member_id,
-    //         member_email,
-    //         member_authentication,
-    //         billing_name,
-    //         bank_code,
-    //         bank_code_name,
-    //         payment_method,
-    //         payment_method_name,
-    //         payment_gateway_name,
-    //         sub_payment_method_name,
-    //         sub_payment_method_code,
-    //         transaction_id,
-    //         paid,
-    //         canceled,
-    //         order_date,
-    //         first_order,
-    //         payment_date,
-    //         order_from_mobile,
-    //         use_escrow,
-    //         group_no_when_ordering,
-    //         initial_order_price_amount,
-    //         initial_shipping_fee,
-    //         initial_points_spent_amount,
-    //         initial_credits_spent_amount,
-    //         initial_coupon_discount_price,
-    //         initial_coupon_shipping_fee_amount,
-    //         initial_membership_discount_amount,
-    //         initial_shipping_fee_discount_amount,
-    //         initial_set_product_discount_amount,
-    //         initial_app_discount_amount,
-    //         initial_point_incentive_amount,
-    //         initial_total_amount_due,
-    //         initial_payment_amount,
-    //         initial_market_other_discount_amount,
-    //         initial_tax,
-    //         actual_order_price_amount,
-    //         actual_shipping_fee,
-    //         actual_points_spent_amount,
-    //         actual_credits_spent_amount,
-    //         actual_coupon_discount_price,
-    //         actual_coupon_shipping_fee_amount,
-    //         actual_membership_discount_amount,
-    //         actual_shipping_fee_discount_amount,
-    //         actual_set_product_discount_amount,
-    //         actual_app_discount_amount,
-    //         actual_point_incentive_amount,
-    //         actual_total_amount_due,
-    //         actual_payment_amount,
-    //         actual_market_other_discount_amount,
-    //         actual_tax,
-    //         bank_account_no,
-    //         bank_account_owner_name,
-    //         market_seller_id,
-    //         payment_amount,
-    //         cancel_date,
-    //         order_place_name,
-    //         order_place_id,
-    //         payment_confirmation,
-    //         commission,
-    //         postpay,
-    //         admin_additional_amount,
-    //         additional_shipping_fee,
-    //         international_shipping_insurance,
-    //         additional_handling_fee,
-    //         shipping_type,
-    //         shipping_type_text,
-    //         shipping_status,
-    //         wished_delivery_date,
-    //         wished_delivery_time,
-    //         wished_carrier_id,
-    //         wished_carrier_name,
-    //         return_confirmed_date,
-    //         total_supply_price,
-    //         store_pickup,
-    //         easypay_name,
-    //         loan_status,
-    //         subscription,
-    //         receivers_name,
-    //         receivers_name_furigana,
-    //         receivers_phone,
-    //         receivers_cellphone,
-    //         receivers_virtual_phone_no,
-    //         receivers_zipcode,
-    //         receivers_address1,
-    //         receivers_address2,
-    //         receivers_address_state,
-    //         receivers_address_city,
-    //         receivers_address_street,
-    //         receivers_address_full,
-    //         receivers_name_en,
-    //         receivers_city_en,
-    //         receivers_state_en,
-    //         receivers_street_en,
-    //         receivers_country_code,
-    //         receivers_country_name,
-    //         receivers_country_name_en,
-    //         receivers_shipping_message,
-    //         receivers_clearance_information_type,
-    //         receivers_clearance_information,
-    //         receivers_wished_delivery_date,
-    //         receivers_wished_delivery_time,
-    //         receivers_shipping_code,
-    //         buyer_member_id,
-    //         buyer_member_group_no,
-    //         buyer_name,
-    //         buyer_names_furigana,
-    //         buyer_email,
-    //         buyer_phone,
-    //         buyer_cellphone,
-    //         buyer_customer_notification,
-    //         buyer_updated_date,
-    //         buyer_user_id,
-    //         buyer_user_name,
-    //         multiple_addresses,
-    //         exchange_rate,
-    //         first_payment_method,
-    //         include_tax,
-    //   )
-    //   VALUES
-    //   (
-    //     "${syncData.shop_no}",
-    //     "${order.currency}",
-    //     "${order.order_id}",
-    //     "${order.market_id}",
-    //     "${order.market_order_no}",
-    //     "${order.market_order_info}",
-    //     "${order.member_id}",
-    //     "${order.member_email}",
-    //     "${order.member_authentication}",
-    //     "${order.billing_name}",
-    //     "${order.bank_code}",
-    //     "${order.bank_code_name}",
-    //     "${order.payment_method.join()}",
-    //     "${order.payment_method_name.join()}",
-    //     "${order.payment_gateway_name}",
-    //     "${order.sub_payment_method_name}",
-    //     "${order.sub_payment_method_code}",
-    //     "${order.transaction_id}",
-    //     "${order.paid}",
-    //     "${order.canceled}",
-    //     "${order.order_date}",
-    //     "${order.first_order}",
-    //     "${order.payment_date}",
-    //     "${order.order_from_mobile}",
-    //     "${order.use_escrow}",
-    //     "${order.group_no_when_ordering}",
-    //     "${order.initial_order_amount.order_price_amount,}" 
-    //     "${order.initial_order_amount.shipping_fee}",
-    //     "${order.initial_order_amount.points_spent_amount}",
-    //     "${order.initial_order_amount.credits_spent_amount}",
-    //     "${order.initial_order_amount.coupon_discount_price}",
-    //     "${order.initial_order_amount.coupon_shipping_fee_amount}",
-    //     "${order.initial_order_amount.membership_discount_amount}",
-    //     "${order.initial_order_amount.shipping_fee_discount_amount}",
-    //     "${order.initial_order_amount.set_product_discount_amount}",
-    //     "${order.initial_order_amount.app_discount_amount}",
-    //     "${order.initial_order_amount.point_incentive_amount}",
-    //     "${order.initial_order_amount.total_amount_due}",
-    //     "${order.initial_order_amount.payment_amount}",
-    //     "${order.initial_order_amount.market_other_discount_amount}",
-    //     "${order.initial_order_amount.tax}",
-    //     "${order.actual_order_amount.order_price_amount,}" 
-    //     "${order.actual_order_amount.shipping_fee}",
-    //     "${order.actual_order_amount.points_spent_amount}",
-    //     "${order.actual_order_amount.credits_spent_amount}",
-    //     "${order.actual_order_amount.coupon_discount_price}",
-    //     "${order.actual_order_amount.coupon_shipping_fee_amount}",
-    //     "${order.actual_order_amount.membership_discount_amount}",
-    //     "${order.actual_order_amount.shipping_fee_discount_amount}",
-    //     "${order.actual_order_amount.set_product_discount_amount}",
-    //     "${order.actual_order_amount.app_discount_amount}",
-    //     "${order.actual_order_amount.point_incentive_amount}",
-    //     "${order.actual_order_amount.total_amount_due}",
-    //     "${order.actual_order_amount.payment_amount}",
-    //     "${order.actual_order_amount.market_other_discount_amount}",
-    //     "${order.actual_order_amount.tax}",
-    //     "${order.bank_account_no}",
-    //     "${order.bank_account_owner_name}",
-    //     "${order.market_seller_id}",
-    //     "${order.payment_amount}",
-    //     "${order.cancel_date}",
-    //     "${order.order_place_name}",
-    //     "${order.order_place_id}",
-    //     "${order.payment_confirmation}",
-    //     "${order.commission}",
-    //     "${order.postpay}",
-    //     "${order.admin_additional_amount}",
-    //     "${order.additional_shipping_fee}",
-    //     "${order.international_shipping_insurance}",
-    //     "${order.additional_handling_fee}",
-    //     "${order.shipping_type}",
-    //     "${order.shipping_type_text}",
-    //     "${order.shipping_status}",
-    //     "${order.wished_delivery_date}",
-    //     "${order.wished_delivery_time}",
-    //     "${order.wished_carrier_id}",
-    //     "${order.wished_carrier_name}",
-    //     "${order.return_confirmed_date}",
-    //     "${order.total_supply_price}",
-    //     "${order.store_pickup}",
-    //     "${order.easypay_name}",
-    //     "${order.loan_status}",
-    //     "${order.subscription}",
-    //     "${remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')}",
-    //     "${remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"')}",
-    //     "${order.receivers[0].phone}",
-    //     "${order.receivers[0].cellphone}",
-    //     "${order.receivers[0].virtual_phone_no}",
-    //     "${order.receivers[0].zipcode}",
-    //     "${remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"')}",
-    //     "${remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"')}",
-    //     "${order.receivers[0].address_state}",
-    //     "${order.receivers[0].address_city}",
-    //     "${order.receivers[0].address_street}",
-    //     "${remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"')}",
-    //     "${order.receivers[0].name_en}",
-    //     "${order.receivers[0].city_en}",
-    //     "${order.receivers[0].state_en}",
-    //     "${order.receivers[0].street_en}",
-    //     "${order.receivers[0].country_code}",
-    //     "${order.receivers[0].country_name}",
-    //     "${order.receivers[0].country_name_en}",
-    //     "${order.receivers[0].shipping_message}",
-    //     "${order.receivers[0].clearance_information_type}",
-    //     "${order.receivers[0].clearance_information}",
-    //     "${order.receivers[0].wished_delivery_date}",
-    //     "${order.receivers[0].wished_delivery_time}",
-    //     "${order.receivers[0].shipping_code}",
-    //     "${order.buyer.member_id}",
-    //     "${order.buyer.member_group_no}",
-    //     "${order.buyer.name}",
-    //     "${order.buyer.names_furigana}",
-    //     "${order.buyer.email}",
-    //     "${order.buyer.phone}",
-    //     "${order.buyer.cellphone}",
-    //     "${order.buyer.customer_notification}",
-    //     "${order.buyer.updated_date}",
-    //     "${order.buyer.user_id}",
-    //     "${order.buyer.user_name}",
-    //     "${order.multiple_addresses}",
-    //     "${order.exchange_rate}",
-    //     "${order.first_payment_method}",
-    //     "${order.include_tax}"
-    //   ) ON DUPLICATE KEY UPDATE
-
-    //     currency=
-    //     order_id=
-    //     market_id=
-    //     market_order_no=
-    //     market_order_info=
-    //     member_id=
-    //     member_email=
-    //     member_authentication=
-    //     billing_name=
-    //     bank_code=
-    //     bank_code_name=
-    //     payment_method=
-    //     payment_method_name=
-    //     payment_gateway_name=
-    //     sub_payment_method_name=
-    //     sub_payment_method_code=
-    //     transaction_id=
-    //     paid=
-    //     canceled=
-    //     order_date=
-    //     first_order=
-    //     payment_date=
-    //     order_from_mobile=
-    //     use_escrow=
-    //     group_no_when_ordering=
-    //     initial_order_price_amount=
-    //     initial_shipping_fee=
-    //     initial_points_spent_amount=
-    //     initial_credits_spent_amount=
-    //     initial_coupon_discount_price=
-    //     initial_coupon_shipping_fee_amount=
-    //     initial_membership_discount_amount=
-    //     initial_shipping_fee_discount_amount=
-    //     initial_set_product_discount_amount=
-    //     initial_app_discount_amount=
-    //     initial_point_incentive_amount=
-    //     initial_total_amount_due=
-    //     initial_payment_amount=
-    //     initial_market_other_discount_amount=
-    //     initial_tax=
-    //     actual_order_price_amount=
-    //     actual_shipping_fee=
-    //     actual_points_spent_amount=
-    //     actual_credits_spent_amount=
-    //     actual_coupon_discount_price=
-    //     actual_coupon_shipping_fee_amount=
-    //     actual_membership_discount_amount=
-    //     actual_shipping_fee_discount_amount=
-    //     actual_set_product_discount_amount=
-    //     actual_app_discount_amount=
-    //     actual_point_incentive_amount=
-    //     actual_total_amount_due=
-    //     actual_payment_amount=
-    //     actual_market_other_discount_amount=
-    //     actual_tax=
-    //     bank_account_no=
-    //     bank_account_owner_name=
-    //     market_seller_id=
-    //     payment_amount=
-    //     cancel_date=
-    //     order_place_name=
-    //     order_place_id=
-    //     payment_confirmation=
-    //     commission=
-    //     postpay=
-    //     admin_additional_amount=
-    //     additional_shipping_fee=
-    //     international_shipping_insurance=
-    //     additional_handling_fee=
-    //     shipping_type=
-    //     shipping_type_text=
-    //     shipping_status=
-    //     wished_delivery_date=
-    //     wished_delivery_time=
-    //     wished_carrier_id=
-    //     wished_carrier_name=
-    //     return_confirmed_date=
-    //     total_supply_price=
-    //     store_pickup=
-    //     easypay_name=
-    //     loan_status=
-    //     subscription=
-    //     receivers_name=
-    //     receivers_name_furigana=
-    //     receivers_phone=
-    //     receivers_cellphone=
-    //     receivers_virtual_phone_no=
-    //     receivers_zipcode=
-    //     receivers_address1=
-    //     receivers_address2=
-    //     receivers_address_state=
-    //     receivers_address_city=
-    //     receivers_address_street=
-    //     receivers_address_full=
-    //     receivers_name_en=
-    //     receivers_city_en=
-    //     receivers_state_en=
-    //     receivers_street_en=
-    //     receivers_country_code=
-    //     receivers_country_name=
-    //     receivers_country_name_en=
-    //     receivers_shipping_message=
-    //     receivers_clearance_information_type=
-    //     receivers_clearance_information=
-    //     receivers_wished_delivery_date=
-    //     receivers_wished_delivery_time=
-    //     receivers_shipping_code=
-    //     buyer_member_id=
-    //     buyer_member_group_no=
-    //     buyer_name=
-    //     buyer_names_furigana=
-    //     buyer_email=
-    //     buyer_phone=
-    //     buyer_cellphone=
-    //     buyer_customer_notification=
-    //     buyer_updated_date=
-    //     buyer_user_id=
-    //     buyer_user_name=
-    //     multiple_addresses=
-    //     exchange_rate=
-    //     first_payment_method=
-    //     include_tax=
-    //  "
-    //   `,
+    //order upsert
+    execute(`INSERT INTO app_jolse_order
+    (   
+        shop_no,
+        currency,
+        order_id,
+        market_id,
+        market_order_info,
+        member_id,
+        billing_name,
+        bank_code,
+        payment_method,
+        payment_method_name,
+        payment_gateway_name,
+        sub_payment_method_name,
+        sub_payment_method_code,
+        transaction_id,
+        paid,
+        canceled,
+        order_date,
+        first_order,
+        payment_date,
+        order_from_mobile,
+        use_escrow,
+        group_no_when_ordering,
+        initial_order_price_amount,
+        initial_shipping_fee,
+        initial_points_spent_amount,
+        initial_credits_spent_amount,
+        initial_coupon_discount_price,
+        initial_coupon_shipping_fee_amount,
+        initial_membership_discount_amount,
+        initial_shipping_fee_discount_amount,
+        initial_set_product_discount_amount,
+        initial_app_discount_amount,
+        initial_point_incentive_amount,
+        initial_total_amount_due,
+        initial_payment_amount,
+        initial_market_other_discount_amount,
+        initial_tax,
+        actual_order_price_amount,
+        actual_shipping_fee,
+        actual_points_spent_amount,
+        actual_credits_spent_amount,
+        actual_coupon_discount_price,
+        actual_coupon_shipping_fee_amount,
+        actual_membership_discount_amount,
+        actual_shipping_fee_discount_amount,
+        actual_set_product_discount_amount,
+        actual_app_discount_amount,
+        actual_point_incentive_amount,
+        actual_total_amount_due,
+        actual_payment_amount,
+        actual_market_other_discount_amount,
+        actual_tax,
+        bank_account_no,
+        payment_amount,
+        cancel_date,
+        order_place_name,
+        order_place_id,
+        commission,
+        postpay,
+        admin_additional_amount,
+        additional_shipping_fee,
+        international_shipping_insurance,
+        additional_handling_fee,
+        shipping_type,
+        shipping_type_text,
+        shipping_status,
+        wished_delivery_date,
+        wished_carrier_id,
+        wished_carrier_name,
+        return_confirmed_date,
+        total_supply_price,
+        store_pickup,
+        easypay_name,
+        subscription,
+        receivers_name,
+        receivers_name_furigana,
+        receivers_phone,
+        receivers_cellphone,
+        receivers_zipcode,
+        receivers_address1,
+        receivers_address2,
+        receivers_address_state,
+        receivers_address_city,
+        receivers_address_street,
+        receivers_address_full,
+        receivers_name_en,
+        receivers_country_code,
+        receivers_country_name,
+        receivers_country_name_en,
+        receivers_shipping_message,
+        receivers_wished_delivery_date,
+        receivers_shipping_code,
+        buyer_member_id,
+        buyer_member_group_no,
+        buyer_name,
+        buyer_names_furigana,
+        buyer_email,
+        buyer_phone,
+        buyer_cellphone,
+        multiple_addresses,
+        exchange_rate,
+        first_payment_method,
+        include_tax
+    )
+    VALUES
+    (
+        "${syncData.shop_no}",
+        "${order.currency}",
+        "${order.order_id}",
+        "${order.market_id}",
+        "${order.market_order_info || ''}",
+        "${order.member_id}",
+        "${order.billing_name}",
+        "${order.bank_code}",
+        "${order.payment_method.join()}",
+        "${order.payment_method_name.join()}",
+        "${order.payment_gateway_name}",
+        "${order.sub_payment_method_name}",
+        "${order.sub_payment_method_code}",
+        "${order.transaction_id}",
+        "${order.paid}",
+        "${order.canceled}",
+        "${order.order_date}",
+        "${order.first_order}",
+        "${order.payment_date}",
+        "${order.order_from_mobile}",
+        "${order.use_escrow}",
+        "${order.group_no_when_ordering}",
+        ${order.initial_order_amount.order_price_amount},
+        ${order.initial_order_amount.shipping_fee},
+        ${order.initial_order_amount.points_spent_amount},
+        ${order.initial_order_amount.credits_spent_amount},
+        ${order.initial_order_amount.coupon_discount_price},
+        ${order.initial_order_amount.coupon_shipping_fee_amount},
+        ${order.initial_order_amount.membership_discount_amount},
+        ${order.initial_order_amount.shipping_fee_discount_amount},
+        ${order.initial_order_amount.set_product_discount_amount},
+        ${order.initial_order_amount.app_discount_amount},
+        ${order.initial_order_amount.point_incentive_amount},
+        ${order.initial_order_amount.total_amount_due},
+        ${order.initial_order_amount.payment_amount},
+        ${order.initial_order_amount.market_other_discount_amount},
+        ${order.initial_order_amount.tax},
+        ${order.actual_order_amount.order_price_amount}, 
+        ${order.actual_order_amount.shipping_fee},
+        ${order.actual_order_amount.points_spent_amount},
+        ${order.actual_order_amount.credits_spent_amount},
+        ${order.actual_order_amount.coupon_discount_price},
+        ${order.actual_order_amount.coupon_shipping_fee_amount},
+        ${order.actual_order_amount.membership_discount_amount},
+        ${order.actual_order_amount.shipping_fee_discount_amount},
+        ${order.actual_order_amount.set_product_discount_amount},
+        ${order.actual_order_amount.app_discount_amount},
+        ${order.actual_order_amount.point_incentive_amount},
+        ${order.actual_order_amount.total_amount_due},
+        ${order.actual_order_amount.payment_amount},
+        ${order.actual_order_amount.market_other_discount_amount},
+        ${order.actual_order_amount.tax},
+        "${order.bank_account_no}",
+        ${order.payment_amount},
+        "${order.cancel_date === null ? 'NULL':order.cancel_date}",
+        "${order.order_place_name}",
+        "${order.order_place_id}",
+        ${order.commission},
+        "${order.postpay}",
+        ${order.admin_additional_amount},
+        ${order.additional_shipping_fee},
+        ${order.international_shipping_insurance},
+        ${order.additional_handling_fee},
+        "${order.shipping_type}",
+        "${order.shipping_type_text}",
+        "${order.shipping_status}",
+        "${order.wished_delivery_date}",
+        ${order.wished_carrier_id},
+        "${order.wished_carrier_name}",
+        "${order.return_confirmed_date === null ? 'NULL':order.return_confirmed_date}",
+        "${order.total_supply_price}",
+        "${order.store_pickup}",
+        "${order.easypay_name}",
+        "${order.subscription}",
+        "${remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')}",
+        "${remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"')}",
+        "${order.receivers[0].phone}",
+        "${order.receivers[0].cellphone}",
+        "${order.receivers[0].zipcode}",
+        "${remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"')}",
+        "${remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"')}",
+        "${order.receivers[0].address_state}",
+        "${order.receivers[0].address_city}",
+        "${order.receivers[0].address_street}",
+        "${remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"')}",
+        "${order.receivers[0].name_en}",
+        "${order.receivers[0].country_code}",
+        "${order.receivers[0].country_name}",
+        "${order.receivers[0].country_name_en}",
+        "${order.receivers[0].shipping_message}",
+        "${order.receivers[0].wished_delivery_date}",
+        "${order.receivers[0].shipping_code}",
+        "${order.buyer.member_id}",
+        ${order.buyer.member_group_no},
+        "${order.buyer.name}",
+        "${order.buyer.names_furigana}",
+        "${order.buyer.email}",
+        "${order.buyer.phone}",
+        "${order.buyer.cellphone}",
+        "${order.multiple_addresses}",
+        "${order.exchange_rate}",
+        "${order.first_payment_method}",
+        "${order.include_tax}"
+      ) ON DUPLICATE KEY UPDATE
+        currency="${order.currency}",
+        order_id="${order.order_id}",
+        market_id="${order.market_id}",
+        member_id="${order.member_id}",
+        billing_name="${order.billing_name}",
+        payment_method= "${order.payment_method.join()}",
+        payment_method_name="${order.payment_method_name.join()}",
+        payment_gateway_name="${order.payment_gateway_name}",
+        sub_payment_method_name="${order.sub_payment_method_name}",
+        sub_payment_method_code="${order.sub_payment_method_code}",
+        transaction_id="${order.transaction_id}",
+        paid="${order.paid}",
+        canceled="${order.canceled}",
+        order_date="${order.order_date}",
+        first_order="${order.first_order}",
+        payment_date="${order.payment_date}",
+        order_from_mobile="${order.order_from_mobile}",
+        use_escrow="${order.use_escrow}",
+        group_no_when_ordering="${order.group_no_when_ordering}",
+        initial_order_price_amount=${order.initial_order_amount.order_price_amount},
+        initial_shipping_fee=${order.initial_order_amount.shipping_fee},
+        initial_points_spent_amount=${order.initial_order_amount.points_spent_amount},
+        initial_credits_spent_amount=${order.initial_order_amount.credits_spent_amount},
+        initial_coupon_discount_price=${order.initial_order_amount.coupon_discount_price},
+        initial_coupon_shipping_fee_amount=${order.initial_order_amount.coupon_shipping_fee_amount},
+        initial_membership_discount_amount=${order.initial_order_amount.membership_discount_amount},
+        initial_shipping_fee_discount_amount=${order.initial_order_amount.shipping_fee_discount_amount},
+        initial_set_product_discount_amount=${order.initial_order_amount.set_product_discount_amount},
+        initial_app_discount_amount=${order.initial_order_amount.app_discount_amount},
+        initial_point_incentive_amount=${order.initial_order_amount.point_incentive_amount},
+        initial_total_amount_due=${order.initial_order_amount.total_amount_due},
+        initial_payment_amount=${order.initial_order_amount.payment_amount},
+        initial_market_other_discount_amount=${order.initial_order_amount.market_other_discount_amount},
+        initial_tax=${order.initial_order_amount.tax},
+        actual_order_price_amount=${order.actual_order_amount.order_price_amount},
+        actual_shipping_fee=${order.actual_order_amount.shipping_fee},
+        actual_points_spent_amount=${order.actual_order_amount.points_spent_amount},
+        actual_credits_spent_amount=${order.actual_order_amount.credits_spent_amount},
+        actual_coupon_discount_price=${order.actual_order_amount.coupon_discount_price},
+        actual_coupon_shipping_fee_amount=${order.actual_order_amount.coupon_shipping_fee_amount},
+        actual_membership_discount_amount=${order.actual_order_amount.membership_discount_amount},
+        actual_shipping_fee_discount_amount=${order.actual_order_amount.shipping_fee_discount_amount},
+        actual_set_product_discount_amount=${order.actual_order_amount.set_product_discount_amount},
+        actual_app_discount_amount=${order.actual_order_amount.app_discount_amount},
+        actual_point_incentive_amount=${order.actual_order_amount.point_incentive_amount},
+        actual_total_amount_due=${order.actual_order_amount.total_amount_due},
+        actual_payment_amount=${order.actual_order_amount.payment_amount},
+        actual_market_other_discount_amount=${order.actual_order_amount.market_other_discount_amount},
+        actual_tax=${order.actual_order_amount.tax},
+        payment_amount=${order.payment_amount},
+        cancel_date="${order.cancel_date}",
+        order_place_name="${order.order_place_name}",
+        order_place_id="${order.order_place_id}",
+        commission=${order.commission},
+        postpay="${order.postpay}",
+        admin_additional_amount=${order.admin_additional_amount},
+        additional_shipping_fee=${order.additional_shipping_fee},
+        international_shipping_insurance=${order.international_shipping_insurance},
+        additional_handling_fee=${order.additional_handling_fee},
+        shipping_type="${order.shipping_type}",
+        shipping_type_text="${order.shipping_type_text}",
+        shipping_status="${order.shipping_status}",
+        wished_delivery_date="${order.wished_delivery_date}",
+        wished_carrier_id=${order.wished_carrier_id},
+        wished_carrier_name="${order.wished_carrier_name}",
+        return_confirmed_date="${order.return_confirmed_date}",
+        total_supply_price="${order.total_supply_price}",
+        store_pickup="${order.store_pickup}",
+        easypay_name="${order.easypay_name}",
+        subscription="${order.subscription}",
+        receivers_name="${remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')}",
+        receivers_name_furigana="${remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"')}",
+        receivers_phone="${order.receivers[0].phone}",
+        receivers_cellphone="${order.receivers[0].cellphone}",
+        receivers_zipcode="${order.receivers[0].zipcode}",
+        receivers_address1="${remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"')}",
+        receivers_address2="${remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"')}",
+        receivers_address_state="${order.receivers[0].address_state}",
+        receivers_address_city="${order.receivers[0].address_city}",
+        receivers_address_street="${order.receivers[0].address_street}",
+        receivers_address_full="${remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"')}",
+        receivers_name_en="${order.receivers[0].name_en}",
+        receivers_country_code="${order.receivers[0].country_code}",
+        receivers_country_name="${order.receivers[0].country_name}",
+        receivers_country_name_en="${order.receivers[0].country_name_en}",
+        receivers_shipping_message="${order.receivers[0].shipping_message}",
+        receivers_wished_delivery_date="${order.receivers[0].wished_delivery_date}",
+        receivers_shipping_code="${order.receivers[0].shipping_code}",
+        buyer_member_id="${order.buyer.member_id}",
+        buyer_member_group_no=${order.buyer.member_group_no},
+        buyer_name="${order.buyer.name}",
+        buyer_names_furigana="${order.buyer.names_furigana}",
+        buyer_email="${order.buyer.email}",
+        buyer_phone="${order.buyer.phone}",
+        buyer_cellphone="${order.buyer.cellphone}",
+        multiple_addresses="${order.multiple_addresses}",
+        exchange_rate="${order.exchange_rate}",
+        first_payment_method="${order.first_payment_method}",
+        include_tax="${order.include_tax}"
+      `,
   
-    //   (err,rows)=>{
-    //       if ( err ) {
-    //           error_hook(syncData.shop_no,err,(e,res) => {
-    //               console.log("OrderUpsert", err)
-    //               throw err;
-    //           });
-    //       } else {
-    //           callback();
-    //       }
-    //   },{});
+      (err,rows)=>{
+          if ( err ) {
+              error_hook(syncData.shop_no,err,(e,res) => {
+                  console.log("OrderUpsert", err)
+                  throw err;
+              });
+          } else {
+              callback();
+          }
+      },{});
 }
 
 const upsertOrder = () => {
@@ -901,7 +840,7 @@ const updateOrder = () => {
                     date_type:'cancel_complete_date',
                     offset:offset,
                     limit:limit,
-                    embed: 'items,cancellation',
+                    embed: 'items,receivers,buyer,cancellation',
                     order_status :'N20,C40'
                   }
     
@@ -915,7 +854,8 @@ const updateOrder = () => {
 
                     //cancel - detail update
                     response.data.orders.forEach(element => {
-
+                        
+                        // console.log(element.order_id);
                         //업데이트 상세
                         element.items.forEach(i => {
                             i.order_id = element.order_id;
@@ -1053,8 +993,8 @@ const worker = async (sync,callback,bool) => {
     insertData.createOrder.length != 0 && await insertOrder();
     insertData.createOrderDetails.length != 0 && await insertOrderDetails();
 
-    insertData.updateOrder.length != 0 && await upsertOrder();
-    insertData.updateOrderDetails.length != 0 && await upsertOrderDetails();
+    // insertData.updateOrder.length != 0 && await upsertOrder();
+    // insertData.updateOrderDetails.length != 0 && await upsertOrderDetails();
 
     await timeSave();
     await connectionClose(callback,bool);
