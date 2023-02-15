@@ -168,8 +168,10 @@ const createOrder = () => {
                 }
     
             }).catch((err) => {
-                console.log("createOrder 에러", err);
-                resolve(false);
+                error_hook(syncData.shop_no, err,(e,res) => {
+                    console.log("createOrder 에러", err);
+                    resolve(false);
+                });
             });
         }
         getOrder();
@@ -573,8 +575,10 @@ const cancelCompleteOrder = () => {
                 }
     
             }).catch((err) => {
-                console.log("cancelOrder 에러", err);
-                resolve(false);
+                error_hook(syncData.shop_no, err,(e,res) => {
+                    console.log("cancelOrder 에러", err);
+                    resolve(false);
+                });
             });
         }
         getOrder();
