@@ -28,8 +28,8 @@ const insertData = {
     createOrderCount:0,
     createOrder:[],
     createOrderDetails:[],
-    updateOrderCount:0,
-    updateOrder: [],
+    cancelOrderCount:0,
+    cancelOrder: [],
     cancelOrderDetails: []
 }
 
@@ -110,7 +110,6 @@ const lastCreateTimeTo = () => {
 // ### 1 주문수집 pay_date 기준
 const createOrder = () => {
     return new Promise((resolve,reject) => {
-        // console.log(`${syncData.access_token}`,contents.start_date, contents.end_date);
 
         let offset = 0; // 최대 15000
         let limit = 1000;
@@ -152,8 +151,8 @@ const createOrder = () => {
                         });
                     });
 
-                    console.log("총 주문수량",insertData.createOrderCount); // 총 주문수량
-                    console.log("총 상세수량", insertData.createOrderDetails.length); // 총 상세수량
+                    // console.log("총 주문수량",insertData.createOrderCount); // 총 주문수량
+                    // console.log("총 상세수량", insertData.createOrderDetails.length); // 총 상세수량
 
                     if ( response.data.orders.length >= 1000) {
                         offset += limit;
@@ -181,139 +180,137 @@ const createOrder = () => {
 const databaseOrderInsert = (order,callback) => {
 
     // order insert
-  const tomodel_order = {
-      shop_no: syncData.shop_no,
-      currency: order.currency,
-      order_id: order.order_id,
-      market_id: order.market_id,
-      market_order_no: order.market_order_no,
-      member_id: order.member_id,
-      member_email: order.member_email,
-      member_authentication: order.member_authentication,
-      billing_name: order.billing_name,
-      bank_code: order.bank_code,
-      bank_code_name: order.bank_code_name,
-      payment_method: order.payment_method.join(),
-      payment_method_name: order.payment_method_name.join(),
-      payment_gateway_name: order.payment_gateway_name,
-      sub_payment_method_name: order.sub_payment_method_name,
-      sub_payment_method_code: order.sub_payment_method_code,
-      transaction_id: order.transaction_id,
-      paid: order.paid,
-      canceled: order.canceled,
-      order_date: order.order_date,
-      first_order: order.first_order,
-      payment_date: order.payment_date,
-      order_from_mobile: order.order_from_mobile,
-      use_escrow: order.use_escrow,
-      group_no_when_ordering: order.group_no_when_ordering,
-      initial_order_price_amount: order.initial_order_amount.order_price_amount, 
+    const tomodel_order = {
+        shop_no: syncData.shop_no,
+        currency: order.currency,
+        order_id: order.order_id,
+        market_id: order.market_id,
+        market_order_no: order.market_order_no,
+        member_id: order.member_id,
+        member_email: order.member_email,
+        member_authentication: order.member_authentication,
+        billing_name: order.billing_name,
+        bank_code: order.bank_code,
+        bank_code_name: order.bank_code_name,
+        payment_method: order.payment_method.join(),
+        payment_method_name: order.payment_method_name.join(),
+        payment_gateway_name: order.payment_gateway_name,
+        sub_payment_method_name: order.sub_payment_method_name,
+        sub_payment_method_code: order.sub_payment_method_code,
+        transaction_id: order.transaction_id,
+        paid: order.paid,
+        canceled: order.canceled,
+        order_date: order.order_date,
+        first_order: order.first_order,
+        payment_date: order.payment_date,
+        order_from_mobile: order.order_from_mobile,
+        use_escrow: order.use_escrow,
+        group_no_when_ordering: order.group_no_when_ordering,
+        initial_order_price_amount: order.initial_order_amount.order_price_amount,
 
-      // initial_order_amount 객체
-      initial_shipping_fee: order.initial_order_amount.shipping_fee,
-      initial_points_spent_amount: order.initial_order_amount.points_spent_amount,
-      initial_credits_spent_amount: order.initial_order_amount.credits_spent_amount,
-      initial_coupon_discount_price: order.initial_order_amount.coupon_discount_price,
-      initial_coupon_shipping_fee_amount: order.initial_order_amount.coupon_shipping_fee_amount,
-      initial_membership_discount_amount: order.initial_order_amount.membership_discount_amount,
-      initial_shipping_fee_discount_amount: order.initial_order_amount.shipping_fee_discount_amount,
-      initial_set_product_discount_amount: order.initial_order_amount.set_product_discount_amount,
-      initial_app_discount_amount: order.initial_order_amount.app_discount_amount,
-      initial_point_incentive_amount: order.initial_order_amount.point_incentive_amount,
-      initial_total_amount_due: order.initial_order_amount.total_amount_due,
-      initial_payment_amount: order.initial_order_amount.payment_amount,
-      initial_market_other_discount_amount: order.initial_order_amount.market_other_discount_amount,
-      initial_tax: order.initial_order_amount.tax,
+        // initial_order_amount 객체
+        initial_shipping_fee: order.initial_order_amount.shipping_fee,
+        initial_points_spent_amount: order.initial_order_amount.points_spent_amount,
+        initial_credits_spent_amount: order.initial_order_amount.credits_spent_amount,
+        initial_coupon_discount_price: order.initial_order_amount.coupon_discount_price,
+        initial_coupon_shipping_fee_amount: order.initial_order_amount.coupon_shipping_fee_amount,
+        initial_membership_discount_amount: order.initial_order_amount.membership_discount_amount,
+        initial_shipping_fee_discount_amount: order.initial_order_amount.shipping_fee_discount_amount,
+        initial_set_product_discount_amount: order.initial_order_amount.set_product_discount_amount,
+        initial_app_discount_amount: order.initial_order_amount.app_discount_amount,
+        initial_point_incentive_amount: order.initial_order_amount.point_incentive_amount,
+        initial_total_amount_due: order.initial_order_amount.total_amount_due,
+        initial_payment_amount: order.initial_order_amount.payment_amount,
+        initial_market_other_discount_amount: order.initial_order_amount.market_other_discount_amount,
+        initial_tax: order.initial_order_amount.tax,
 
-      // actual_order_amount 객체
-      actual_order_price_amount: order.actual_order_amount.order_price_amount, 
-      actual_shipping_fee: order.actual_order_amount.shipping_fee,
-      actual_points_spent_amount: order.actual_order_amount.points_spent_amount,
-      actual_credits_spent_amount: order.actual_order_amount.credits_spent_amount,
-      actual_coupon_discount_price: order.actual_order_amount.coupon_discount_price,
-      actual_coupon_shipping_fee_amount: order.actual_order_amount.coupon_shipping_fee_amount,
-      actual_membership_discount_amount: order.actual_order_amount.membership_discount_amount,
-      actual_shipping_fee_discount_amount: order.actual_order_amount.shipping_fee_discount_amount,
-      actual_set_product_discount_amount: order.actual_order_amount.set_product_discount_amount,
-      actual_app_discount_amount: order.actual_order_amount.app_discount_amount,
-      actual_point_incentive_amount: order.actual_order_amount.point_incentive_amount,
-      actual_total_amount_due: order.actual_order_amount.total_amount_due,
-      actual_payment_amount: order.actual_order_amount.payment_amount,
-      actual_market_other_discount_amount: order.actual_order_amount.market_other_discount_amount,
-      actual_tax: order.actual_order_amount.tax,
+        // actual_order_amount 객체
+        actual_order_price_amount: order.actual_order_amount.order_price_amount, 
+        actual_shipping_fee: order.actual_order_amount.shipping_fee,
+        actual_points_spent_amount: order.actual_order_amount.points_spent_amount,
+        actual_credits_spent_amount: order.actual_order_amount.credits_spent_amount,
+        actual_coupon_discount_price: order.actual_order_amount.coupon_discount_price,
+        actual_coupon_shipping_fee_amount: order.actual_order_amount.coupon_shipping_fee_amount,
+        actual_membership_discount_amount: order.actual_order_amount.membership_discount_amount,
+        actual_shipping_fee_discount_amount: order.actual_order_amount.shipping_fee_discount_amount,
+        actual_set_product_discount_amount: order.actual_order_amount.set_product_discount_amount,
+        actual_app_discount_amount: order.actual_order_amount.app_discount_amount,
+        actual_point_incentive_amount: order.actual_order_amount.point_incentive_amount,
+        actual_total_amount_due: order.actual_order_amount.total_amount_due,
+        actual_payment_amount: order.actual_order_amount.payment_amount,
+        actual_market_other_discount_amount: order.actual_order_amount.market_other_discount_amount,
+        actual_tax: order.actual_order_amount.tax, 
+        bank_account_no: order.bank_account_no,
+        bank_account_owner_name: order.bank_account_owner_name,
+        market_seller_id: order.market_seller_id,
+        payment_amount: order.payment_amount,
+        cancel_date: order.cancel_date,
+        order_place_name: order.order_place_name,
+        order_place_id: order.order_place_id,
+        payment_confirmation: order.payment_confirmation,
+        commission: order.commission,
+        postpay: order.postpay,
+        admin_additional_amount: order.admin_additional_amount,
+        additional_shipping_fee: order.additional_shipping_fee,
+        international_shipping_insurance: order.international_shipping_insurance,
+        additional_handling_fee: order.additional_handling_fee,
+        shipping_type: order.shipping_type,
+        shipping_type_text: order.shipping_type_text,
+        shipping_status: order.shipping_status,
+        wished_delivery_date: order.wished_delivery_date,
+        wished_delivery_time: order.wished_delivery_time,
+        wished_carrier_id: order.wished_carrier_id,
+        wished_carrier_name: order.wished_carrier_name,
+        return_confirmed_date: order.return_confirmed_date,
+        total_supply_price: order.total_supply_price,
+        store_pickup: order.store_pickup,
+        easypay_name: order.easypay_name,
+        loan_status: order.loan_status,
+        subscription: order.subscription,
 
-      bank_account_no: order.bank_account_no,
-      bank_account_owner_name: order.bank_account_owner_name,
-      market_seller_id: order.market_seller_id,
-      payment_amount: order.payment_amount,
-      cancel_date: order.cancel_date,
-      order_place_name: order.order_place_name,
-      order_place_id: order.order_place_id,
-      payment_confirmation: order.payment_confirmation,
-      commission: order.commission,
-      postpay: order.postpay,
-      admin_additional_amount: order.admin_additional_amount,
-      additional_shipping_fee: order.additional_shipping_fee,
-      international_shipping_insurance: order.international_shipping_insurance,
-      additional_handling_fee: order.additional_handling_fee,
-      shipping_type: order.shipping_type,
-      shipping_type_text: order.shipping_type_text,
-      shipping_status: order.shipping_status,
-      wished_delivery_date: order.wished_delivery_date,
-      wished_delivery_time: order.wished_delivery_time,
-      wished_carrier_id: order.wished_carrier_id,
-      wished_carrier_name: order.wished_carrier_name,
-      return_confirmed_date: order.return_confirmed_date,
-      total_supply_price: order.total_supply_price,
-      store_pickup: order.store_pickup,
-      easypay_name: order.easypay_name,
-      loan_status: order.loan_status,
-      subscription: order.subscription,
+        //receivers 배열
+        receivers_name: remove_emoji(order.receivers[0].name).replace(/"/g, '\\"') || '',
+        receivers_name_furigana: remove_emoji(order.receivers[0].name_furigana).replace(/"/g, '\\"') || '',
+        receivers_phone: order.receivers[0].phone,
+        receivers_cellphone: order.receivers[0].cellphone,
+        receivers_virtual_phone_no: order.receivers[0].virtual_phone_no,
+        receivers_zipcode: order.receivers[0].zipcode,
+        receivers_address1: remove_emoji(order.receivers[0].address1).replace(/"/g, '\\"') || '',
+        receivers_address2: remove_emoji(order.receivers[0].address2).replace(/"/g, '\\"') || '',
+        receivers_address_state: order.receivers[0].address_state,
+        receivers_address_city: order.receivers[0].address_city,
+        receivers_address_street: order.receivers[0].address_street,
+        receivers_address_full: remove_emoji(order.receivers[0].address_full).replace(/"/g, '\\"') || '',
+        receivers_name_en: order.receivers[0].name_en,
+        receivers_city_en: order.receivers[0].city_en,
+        receivers_state_en: order.receivers[0].state_en,
+        receivers_street_en: order.receivers[0].street_en,
+        receivers_country_code: order.receivers[0].country_code,
+        receivers_country_name: order.receivers[0].country_name,
+        receivers_country_name_en: order.receivers[0].country_name_en,
+        receivers_shipping_message: order.receivers[0].shipping_message,
+        receivers_clearance_information_type: order.receivers[0].clearance_information_type,
+        receivers_clearance_information: order.receivers[0].clearance_information,
+        receivers_wished_delivery_date: order.receivers[0].wished_delivery_date,
+        receivers_wished_delivery_time: order.receivers[0].wished_delivery_time,
+        receivers_shipping_code: order.receivers[0].shipping_code,
 
-      //receivers 배열
-      // remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')
-      receivers_name: remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"'),
-      receivers_name_furigana: remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"'),
-      receivers_phone: order.receivers[0].phone,
-      receivers_cellphone: order.receivers[0].cellphone,
-      receivers_virtual_phone_no: order.receivers[0].virtual_phone_no,
-      receivers_zipcode: order.receivers[0].zipcode,
-      receivers_address1: remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"'),
-      receivers_address2: remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"'),
-      receivers_address_state: order.receivers[0].address_state,
-      receivers_address_city: order.receivers[0].address_city,
-      receivers_address_street: order.receivers[0].address_street,
-      receivers_address_full: remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"'),
-      receivers_name_en: order.receivers[0].name_en,
-      receivers_city_en: order.receivers[0].city_en,
-      receivers_state_en: order.receivers[0].state_en,
-      receivers_street_en: order.receivers[0].street_en,
-      receivers_country_code: order.receivers[0].country_code,
-      receivers_country_name: order.receivers[0].country_name,
-      receivers_country_name_en: order.receivers[0].country_name_en,
-      receivers_shipping_message: order.receivers[0].shipping_message,
-      receivers_clearance_information_type: order.receivers[0].clearance_information_type,
-      receivers_clearance_information: order.receivers[0].clearance_information,
-      receivers_wished_delivery_date: order.receivers[0].wished_delivery_date,
-      receivers_wished_delivery_time: order.receivers[0].wished_delivery_time,
-      receivers_shipping_code: order.receivers[0].shipping_code,
-
-      // buyer 객체
-      buyer_member_id: order.buyer.member_id,
-      buyer_member_group_no: order.buyer.member_group_no,
-      buyer_name: order.buyer.name,
-      buyer_names_furigana: order.buyer.names_furigana,
-      buyer_email: order.buyer.email,
-      buyer_phone: order.buyer.phone,
-      buyer_cellphone: order.buyer.cellphone,
-      buyer_customer_notification: order.buyer.customer_notification,
-      buyer_updated_date: order.buyer.updated_date,
-      buyer_user_id: order.buyer.user_id,
-      buyer_user_name: order.buyer.user_name,
-      multiple_addresses: order.multiple_addresses,
-      exchange_rate: order.exchange_rate,
-      first_payment_method: order.first_payment_method,
-      include_tax: order.include_tax
+        // buyer 객체
+        buyer_member_id: order.buyer.member_id,
+        buyer_member_group_no: order.buyer.member_group_no,
+        buyer_name: order.buyer.name,
+        buyer_names_furigana: order.buyer.names_furigana,
+        buyer_email: order.buyer.email,
+        buyer_phone: order.buyer.phone,
+        buyer_cellphone: order.buyer.cellphone,
+        buyer_customer_notification: order.buyer.customer_notification,
+        buyer_updated_date: order.buyer.updated_date,
+        buyer_user_id: order.buyer.user_id,
+        buyer_user_name: order.buyer.user_name,
+        multiple_addresses: order.multiple_addresses,
+        exchange_rate: order.exchange_rate,
+        first_payment_method: order.first_payment_method,
+        include_tax: order.include_tax
   }
 
   execute(`INSERT IGNORE INTO app_jolse_order SET ?`,
@@ -514,20 +511,19 @@ const cancelCompleteOrder = () => {
     
             }).then((response) => {
 
-                console.log("=================취소완료날짜기준 주문수량====================", response.data.orders.length)
                 if (response.data.orders.length > 0) {
 
-                    insertData.updateOrder = insertData.updateOrder.concat(response.data.orders);
-                    insertData.updateOrderCount = insertData.updateOrder.length;
+                    insertData.cancelOrder = insertData.cancelOrder.concat(response.data.orders);
+                    insertData.cancelOrderCount = insertData.cancelOrder.length;
 
                     //cancel - detail update
                     response.data.orders.forEach(element => {
                         
                         //업데이트 상세
                         // element.items.forEach(i => {
-                        //     // console.log("일반상세 주문번호(취소포함)", element.order_id, i.order_status);
+
                         //     i.order_id = element.order_id;
-                        //     insertData.updateOrderDetails = insertData.updateOrderDetails.concat(i);
+                        //     insertData.cancelOrderDetails = insertData.cancelOrderDetails.concat(i);
                         // });
 
                         //취소상세
@@ -560,8 +556,8 @@ const cancelCompleteOrder = () => {
 
                     });
 
-                    console.log("총 업데이트 주문수량",insertData.updateOrderCount); // 총 업데이트 주문수량
-                    console.log("총 취소상세수량", insertData.cancelOrderDetails.length); // 총 업데이트 상세수량
+                    // console.log("총 업데이트 주문수량",insertData.cancelOrderCount); // 총 업데이트 주문수량
+                    // console.log("총 취소상세수량", insertData.cancelOrderDetails.length); // 총 업데이트 상세수량
 
                     if ( response.data.orders.length >= 1000) {
                         offset += limit;
@@ -577,7 +573,7 @@ const cancelCompleteOrder = () => {
                 }
     
             }).catch((err) => {
-                console.log("updateOrder 에러", err);
+                console.log("cancelOrder 에러", err);
                 resolve(false);
             });
         }
@@ -769,17 +765,17 @@ const databaseOrderUpsert = (order, callback) => {
         "${order.store_pickup}",
         "${order.easypay_name}",
         "${order.subscription}",
-        "${remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')}",
-        "${remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"')}",
+        "${remove_emoji(order.receivers[0].name).replace(/"/g, '\\"') || ''}",
+        "${remove_emoji(order.receivers[0].name_furigana).replace(/"/g, '\\"') || ''}",
         "${order.receivers[0].phone}",
         "${order.receivers[0].cellphone}",
         "${order.receivers[0].zipcode}",
-        "${remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"')}",
-        "${remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"')}",
+        "${remove_emoji(order.receivers[0].address1).replace(/"/g, '\\"') || ''}",
+        "${remove_emoji(order.receivers[0].address2).replace(/"/g, '\\"') || ''}",
         "${order.receivers[0].address_state}",
         "${order.receivers[0].address_city}",
         "${order.receivers[0].address_street}",
-        "${remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"')}",
+        "${remove_emoji(order.receivers[0].address_full).replace(/"/g, '\\"') || ''}",
         "${order.receivers[0].name_en}",
         "${order.receivers[0].country_code}",
         "${order.receivers[0].country_name}",
@@ -819,17 +815,17 @@ const databaseOrderUpsert = (order, callback) => {
         actual_tax=${order.actual_order_amount.tax},
         payment_amount=${order.payment_amount},
         cancel_date="${order.cancel_date}",
-        receivers_name="${remove_emoji(order.receivers[0].name)?.replace(/"/g, '\\"')}",
-        receivers_name_furigana="${remove_emoji(order.receivers[0].name_furigana)?.replace(/"/g, '\\"')}",
+        receivers_name="${remove_emoji(order.receivers[0].name).replace(/"/g, '\\"') || ''}",
+        receivers_name_furigana="${remove_emoji(order.receivers[0].name_furigana).replace(/"/g, '\\"') || ''}",
         receivers_phone="${order.receivers[0].phone}",
         receivers_cellphone="${order.receivers[0].cellphone}",
         receivers_zipcode="${order.receivers[0].zipcode}",
-        receivers_address1="${remove_emoji(order.receivers[0].address1)?.replace(/"/g, '\\"')}",
-        receivers_address2="${remove_emoji(order.receivers[0].address2)?.replace(/"/g, '\\"')}",
+        receivers_address1="${remove_emoji(order.receivers[0].address1).replace(/"/g, '\\"') || ''}",
+        receivers_address2="${remove_emoji(order.receivers[0].address2).replace(/"/g, '\\"') || ''}",
         receivers_address_state="${order.receivers[0].address_state}",
         receivers_address_city="${order.receivers[0].address_city}",
         receivers_address_street="${order.receivers[0].address_street}",
-        receivers_address_full="${remove_emoji(order.receivers[0].address_full)?.replace(/"/g, '\\"')}",
+        receivers_address_full="${remove_emoji(order.receivers[0].address_full).replace(/"/g, '\\"') || ''}",
         receivers_name_en="${order.receivers[0].name_en}",
         receivers_country_code="${order.receivers[0].country_code}",
         receivers_country_name="${order.receivers[0].country_name}",
@@ -859,16 +855,16 @@ const upsertOrder = () => {
         let loop = 0;
         const callAPI = () => {
 
-            insertData.updateOrder.length == loop ? 
+            insertData.cancelOrder.length == loop ? 
                 resolve() :
-                databaseOrderUpsert(insertData.updateOrder[loop++],callAPI);
+                databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
         }
-        databaseOrderUpsert(insertData.updateOrder[loop++],callAPI);
+        databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
     });
 }
 
 // # 10 cancel upsert
-const databaseCancelOrderDetailsUpsert = (details, callback) => {
+const databaseOrderDetailsUpsert = (details, callback) => {
 
     // cancel upsert
       execute(`INSERT INTO app_jolse_order_details
@@ -1018,7 +1014,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         "${details.shipping_code}",
         "${details.claim_code}",
         "${details.claim_reason_type}",
-        "${details.claim_reason?.replace(/"/g, '\\"')}",
+        "${details.claim_reason}",
         "${details.refund_bank_name}",
         "${details.refund_bank_account_no}",
         "${details.refund_bank_account_holder}",
@@ -1072,7 +1068,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         "${details.product_bundle_list}",
         "${details.market_cancel_request}",
         "${details.market_cancel_request_quantity}",
-        "${details.market_fail_reason?.replace(/"/g, '\\"')}",
+        "${details.market_fail_reason}",
         "${details.market_fail_reason_guide}",
         "${details.market_custom_variant_code}",
         "${details.option_type}",
@@ -1080,7 +1076,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         "${details.labels}",
         "${details.order_status_before_cs}",
         "${details.refund_method}",
-        "${details.refund_reason?.replace(/"/g, '\\"')}",
+        "${details.refund_reason}",
         ${details.order_price_amount},
         ${details.refund_amount},
         ${details.shipping_fee},
@@ -1095,7 +1091,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         ${details.credit_used},
         "${details.undone}",
         "${details.undone_reason_type}",
-        "${details.undone_reason?.replace(/"/g, '\\"')}"
+        "${details.undone_reason}"
       ) ON DUPLICATE KEY UPDATE
         order_item_code="${details.order_item_code}",
         quantity=${details.quantity},
@@ -1104,7 +1100,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         status_code="${details.status_code}",
         status_text="${details.status_text}",
         refund_method="${details.refund_method}",
-        refund_reason="${details.refund_reason?.replace(/"/g, '\\"')||null}",
+        refund_reason="${details.refund_reason}",
         order_price_amount=${details.order_price_amount},
         refund_amount=${details.refund_amount},
         shipping_fee=${details.shipping_fee},
@@ -1118,7 +1114,7 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
         credit_used=${details.credit_used},
         undone="${details.undone}",
         undone_reason_type="${details.undone_reason_type}",
-        undone_reason="${details.undone_reason?.replace(/"/g, '\\"')||null}"
+        undone_reason="${details.undone_reason}"
       `,
       
       (err,rows)=>{
@@ -1134,16 +1130,16 @@ const databaseCancelOrderDetailsUpsert = (details, callback) => {
 }
 
 // # 9 cancel detail UPSERT
-const upsertCancelOrderDetails = () => {
+const upsertOrderDetails = () => {
     return new Promise((resolve,reject) => {
 
         let loop = 0;
         const callAPI = () => {
             insertData.cancelOrderDetails.length == loop ? 
             resolve() :
-            databaseCancelOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI);
+            databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI);
         }
-        databaseCancelOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI)
+        databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI)
 
     })
 }
@@ -1155,12 +1151,12 @@ const timeSave = () => {
                 shop_no,
                 time_to,
                 create_count,
-                update_count
+                cancel_count
                 ) VALUES (
                     "${syncData.shop_no}",
                     "${contents.end_date}",
                     ${insertData.createOrder.length},
-                    ${insertData.updateOrder.length}
+                    ${insertData.cancelOrder.length}
                 )`,
                 (err,rows)=>{
                     if ( err ) {
@@ -1178,7 +1174,7 @@ const timeSave = () => {
 const connectionClose = (callback,bool) => {
     return new Promise((resolve,reject) => {
 
-        console.log(syncData.shop_no, insertData.createOrder.length, insertData.createOrderDetails.length, insertData.updateOrder.length, insertData.cancelOrderDetails.length);
+        console.log(syncData.shop_no, insertData.createOrder.length, insertData.createOrderDetails.length, insertData.cancelOrder.length, insertData.cancelOrderDetails.length);
         console.log(new Date() + ' 종료');
         console.log('=====================================================================');
 
@@ -1205,13 +1201,13 @@ const worker = async (sync,callback,bool) => {
     insertData.createOrder = [];
     insertData.createOrderDetails = [];
 
-    insertData.updateOrderCount = 0;
-    insertData.updateOrder = [];
+    insertData.cancelOrderCount = 0;
+    insertData.cancelOrder = [];
     insertData.cancelOrderDetails = [];
 
     await lastCreateTimeTo();
     const success1 = await createOrder(); //pay_date 기준
-    const success2 = await cancelCompleteOrder();
+    const success2 = await cancelCompleteOrder(); // cancel_complete_date 기준
 
     if ( !success1 ) {
         await connectionClose(callback,bool);
@@ -1225,9 +1221,8 @@ const worker = async (sync,callback,bool) => {
 
     insertData.createOrder.length != 0 && await insertOrder();
     insertData.createOrderDetails.length != 0 && await insertOrderDetails();
-
-    insertData.updateOrder.length != 0 && await upsertOrder();
-    insertData.cancelOrderDetails.length != 0 && await upsertCancelOrderDetails();
+    insertData.cancelOrder.length != 0 && await upsertOrder();
+    insertData.cancelOrderDetails.length != 0 && await upsertOrderDetails();
 
     await timeSave();
     await connectionClose(callback,bool);
