@@ -91,9 +91,13 @@ const lastCreateTimeTo = () => {
                         let yesterday_time = dateformat(yesterday, `yyyy-mm-dd'T'HH:MM:ss+09:00`);
 
                         if ( rows.length >= 1 ) { //time_to 있는 경우
+
                             contents.start_date = rows[0].time_to;
+                            contents.start_date = new Date(contents.start_date);
+                            contents.start_date = new Date(contents.start_date).setMinutes(contents.start_date.getMinutes() - 1); // 1분전
+                            contents.start_date = dateformat(contents.start_date, `yyyy-mm-dd'T'HH:MM:ss+09:00`)
                             contents.end_date = time;
-                            console.log(`시작:${contents.start_date}, 끝: ${contents.end_date }`);
+                            console.log(`변경후:${contents.start_date}, 끝: ${contents.end_date }`);
                             resolve();
                         } else {
                             contents.start_date = yesterday_time; // 하루전
