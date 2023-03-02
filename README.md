@@ -1,4 +1,4 @@
-# cafe-api
+# cafe24-api
 
 - Jolse
 1. Retrieve a list of orders
