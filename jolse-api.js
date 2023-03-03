@@ -30,7 +30,9 @@ const insertData = {
     createOrderDetails:[],
     cancelOrderCount:0,
     cancelOrder: [],
-    cancelOrderDetails: []
+    cancelOrderDetails: [],
+    updateOrderDetails: [],
+
 }
 
 const execute = (sql,callback,data = {})=>{
@@ -69,7 +71,7 @@ const lastCreateTimeTo = () => {
 
             contents.start_date = status.start_date; 
             contents.end_date = status.end_date;
-            console.log(`직접세팅한날짜- start_date: ${contents.start_date}, end_date:${contents.end_date}` );
+            console.log(`직접세팅한날짜 - start_date: ${contents.start_date}, end_date:${contents.end_date}` );
             resolve();
 
         } else if ( status.process == 'auto' ) {
@@ -97,12 +99,11 @@ const lastCreateTimeTo = () => {
                             contents.start_date = new Date(contents.start_date).setMinutes(contents.start_date.getMinutes() - 1); // 1분전
                             contents.start_date = dateformat(contents.start_date, `yyyy-mm-dd'T'HH:MM:ss+09:00`)
                             contents.end_date = time;
-                            console.log(`변경후:${contents.start_date}, 끝: ${contents.end_date }`);
+                            console.log(`시작(time_to - 1분): ${contents.start_date}, 끝: ${contents.end_date }`);
                             resolve();
                         } else {
                             contents.start_date = yesterday_time; // 하루전
                             contents.end_date = time;
-                            // console.log(`없는경우 하루전부터-현시점까지, 시작:${contents.start_date}, 끝: ${contents.end_date }`);
                             resolve();
                         }
                     }
@@ -111,7 +112,7 @@ const lastCreateTimeTo = () => {
     })
 }
 
-// ### 1 주문수집 pay_date 기준
+// ### 1 주문수집 pay_date 기준(결제완료) - createOrder, createOrderDetails
 const createOrder = () => {
     return new Promise((resolve,reject) => {
 
@@ -163,7 +164,6 @@ const createOrder = () => {
                         getOrder();
                         
                     } else {
-                        // console.log("insert", insertData.createOrder.length)
                         resolve(true);
                     }
 
@@ -182,7 +182,22 @@ const createOrder = () => {
     })
 }
 
-// #3 Order DB 저장
+// #2 insertOrder
+const insertOrder = () => {
+    return new Promise((resolve,reject) => {
+
+        let loop = 0;
+        const callAPI = () => {
+            insertData.createOrder.length == loop ? 
+            resolve() :
+            databaseOrderInsert(insertData.createOrder[loop++], callAPI);
+        }
+        databaseOrderInsert(insertData.createOrder[loop++], callAPI)
+
+    })
+}
+
+// #3 app_jolse_order DB 저장
 const databaseOrderInsert = (order,callback) => {
 
     // order insert
@@ -332,26 +347,25 @@ const databaseOrderInsert = (order,callback) => {
   }, tomodel_order);
 }
 
-// #2 insertOrder
-const insertOrder = () => {
+// #4 insertOrderDetails
+const insertOrderDetails = () => {
     return new Promise((resolve,reject) => {
 
         let loop = 0;
+        // console.log("insertData.createOrderDetails", insertData.createOrderDetails[0])
         const callAPI = () => {
-            insertData.createOrder.length == loop ? 
+            insertData.createOrderDetails.length == loop ? 
             resolve() :
-            databaseOrderInsert(insertData.createOrder[loop++], callAPI);
+            databaseOrderDetailsInsert(insertData.createOrderDetails[loop++], callAPI);
         }
-        databaseOrderInsert(insertData.createOrder[loop++], callAPI)
+        databaseOrderDetailsInsert(insertData.createOrderDetails[loop++], callAPI)
 
     })
 }
 
-// #5 Detail DB 저장
+// #5 app_jolse_order_details DB 저장
 const databaseOrderDetailsInsert = (details, callback) => {
 
-    // console.log(`details: ${details.order_item_code}`)
-    // console.log(`details: ${details.order_id}`)
     //order_details insert
     const tomodel_order_details = {
         shop_no: syncData.shop_no,
@@ -388,7 +402,7 @@ const databaseOrderDetailsInsert = (details, callback) => {
 
         claim_code: details.claim_code,
         claim_reason_type: details.claim_reason_type,
-        claim_reason: details.claim_reason,
+        claim_reason: details.claim_reason && remove_emoji(details.claim_reason).replace(/"/g, '\\"') || '',
         refund_bank_name: details.refund_bank_name,
         refund_bank_account_no: details.refund_bank_account_no,
         refund_bank_account_holder: details.efund_bank_account_holder,
@@ -471,23 +485,7 @@ const databaseOrderDetailsInsert = (details, callback) => {
 
 }
 
-// #4 insertDetails
-const insertOrderDetails = () => {
-    return new Promise((resolve,reject) => {
-
-        let loop = 0;
-        // console.log("insertData.createOrderDetails", insertData.createOrderDetails[0])
-        const callAPI = () => {
-            insertData.createOrderDetails.length == loop ? 
-            resolve() :
-            databaseOrderDetailsInsert(insertData.createOrderDetails[loop++], callAPI);
-        }
-        databaseOrderDetailsInsert(insertData.createOrderDetails[loop++], callAPI)
-
-    })
-}
-
-// ## 6 취소완료날짜 기준
+// ### 6 주문수집 cancel_complete_date 기준(취소완료날짜) - cancelOrder, updateOrderDetails, cancelOrderDetails
 const cancelCompleteOrder = () => {
     return new Promise((resolve,reject) => {
 
@@ -526,11 +524,10 @@ const cancelCompleteOrder = () => {
                     response.data.orders.forEach(element => {
                         
                         //업데이트 상세
-                        // element.items.forEach(i => {
-
-                        //     i.order_id = element.order_id;
-                        //     insertData.cancelOrderDetails = insertData.cancelOrderDetails.concat(i);
-                        // });
+                        element.items.forEach(i => {
+                            i.order_id = element.order_id;
+                            insertData.updateOrderDetails = insertData.updateOrderDetails.concat(i);
+                        });
 
                         //취소상세
                         element.cancellation.forEach(i => {
@@ -562,8 +559,8 @@ const cancelCompleteOrder = () => {
 
                     });
 
-                    // console.log("총 업데이트 주문수량",insertData.cancelOrderCount); // 총 업데이트 주문수량
-                    // console.log("총 취소상세수량", insertData.cancelOrderDetails.length); // 총 업데이트 상세수량
+                    // console.log("총 업데이트상세수량", insertData.updateOrderDetails.length); // 총 업데이트 상세수량
+                    // console.log("총 취소상세수량", insertData.cancelOrderDetails.length); // 총 업데이트 취소상세수량
 
                     if ( response.data.orders.length >= 1000) {
                         offset += limit;
@@ -589,7 +586,22 @@ const cancelCompleteOrder = () => {
     })
 }
 
-// #8 Order DB 업데이트
+// #7 upsertOrder (cancelOrder)
+const upsertOrder = () => {
+    return new Promise((resolve,reject) => {
+
+        let loop = 0;
+        const callAPI = () => {
+
+            insertData.cancelOrder.length == loop ? 
+                resolve() :
+                databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
+        }
+        databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
+    });
+}
+
+// #8 app_jolse_order DB 업설트 (cancelOrder)
 const databaseOrderUpsert = (order, callback) => {
 
     //order upsert
@@ -856,27 +868,71 @@ const databaseOrderUpsert = (order, callback) => {
       },{});
 }
 
-// #7 Order Upsert, 주문정보 업설트
-const upsertOrder = () => {
+// #9 update detail
+const updateOrderDetails = () => {
     return new Promise((resolve,reject) => {
 
         let loop = 0;
         const callAPI = () => {
-
-            insertData.cancelOrder.length == loop ? 
-                resolve() :
-                databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
+            insertData.updateOrderDetails.length == loop ? 
+            resolve() :
+            databaseOrderDetailsUpdate(insertData.updateOrderDetails[loop++], callAPI);
         }
-        databaseOrderUpsert(insertData.cancelOrder[loop++],callAPI);
-    });
+        databaseOrderDetailsUpdate(insertData.updateOrderDetails[loop++], callAPI)
+
+    })
 }
 
-// # 10 cancel upsert
+// # 10 app_jolse_order_details DB 업데이트 (updateOrderDetails)
+const databaseOrderDetailsUpdate = (details, callback) => {
+
+    execute(`UPDATE app_jolse_order_details
+            SET product_price="${details.product_price}",
+            option_price="${details.option_price}",
+            quantity=${details.quantity},
+            additional_discount_price=${details.additional_discount_price},
+            coupon_discount_price=${details.coupon_discount_price},
+            order_status="${details.order_status}",
+            status_code="${details.order_status}",
+            status_text="${details.status_text}",
+            claim_quantity="${details.claim_quantity}"
+        WHERE order_item_code="${details.order_item_code}"`,
+
+        (err,rows)=>{
+
+            if ( err ) {
+                error_hook(syncData.shop_no,err,(e,res) => {
+                    console.log("OrderUpdateDetails", err)
+                    throw err;
+                });
+            } else {
+                callback();
+            }
+        },{});
+
+}
+
+// # 11 upsertOrderDetails (cancelOrderDetails)
+const upsertOrderDetails = () => {
+    return new Promise((resolve,reject) => {
+
+        let loop = 0;
+        const callAPI = () => {
+            insertData.cancelOrderDetails.length == loop ? 
+            resolve() :
+            databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI);
+        }
+        databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI)
+
+    })
+}
+
+// # 12 app_jolse_order_details DB 업설트 (cancelOrderDetails)
 const databaseOrderDetailsUpsert = (details, callback) => {
 
-    // cancel upsert
-      execute(`INSERT INTO app_jolse_order_details
-      (
+    // cancelOrderDetails upsert
+    execute(`INSERT INTO app_jolse_order_details
+    (
         shop_no,
         order_id,
         item_no,
@@ -987,9 +1043,9 @@ const databaseOrderDetailsUpsert = (details, callback) => {
         undone,
         undone_reason_type,
         undone_reason
-      )
-      VALUES
-      (
+    )
+    VALUES
+    (
         "${syncData.shop_no}",
         "${details.order_id}",
         "${details.item_no}",
@@ -1022,7 +1078,7 @@ const databaseOrderDetailsUpsert = (details, callback) => {
         "${details.shipping_code}",
         "${details.claim_code}",
         "${details.claim_reason_type}",
-        "${details.claim_reason}",
+        "${details.claim_reason && remove_emoji(details.claim_reason).replace(/"/g, '\\"') || ''}",
         "${details.refund_bank_name}",
         "${details.refund_bank_account_no}",
         "${details.refund_bank_account_holder}",
@@ -1100,7 +1156,7 @@ const databaseOrderDetailsUpsert = (details, callback) => {
         "${details.undone}",
         "${details.undone_reason_type}",
         "${details.undone_reason}"
-      ) ON DUPLICATE KEY UPDATE
+    ) ON DUPLICATE KEY UPDATE
         order_item_code="${details.order_item_code}",
         quantity=${details.quantity},
         order_status="${details.order_status}",
@@ -1123,9 +1179,9 @@ const databaseOrderDetailsUpsert = (details, callback) => {
         undone="${details.undone}",
         undone_reason_type="${details.undone_reason_type}",
         undone_reason="${details.undone_reason}"
-      `,
+    `,
       
-      (err,rows)=>{
+    (err,rows)=>{
           if ( err ) {
               error_hook(syncData.shop_no,err,(e,res) => {
                   console.log("cancelUpsert", err)
@@ -1134,22 +1190,7 @@ const databaseOrderDetailsUpsert = (details, callback) => {
           } else {
               callback();
           }
-      },{});
-}
-
-// # 9 cancel detail UPSERT
-const upsertOrderDetails = () => {
-    return new Promise((resolve,reject) => {
-
-        let loop = 0;
-        const callAPI = () => {
-            insertData.cancelOrderDetails.length == loop ? 
-            resolve() :
-            databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI);
-        }
-        databaseOrderDetailsUpsert(insertData.cancelOrderDetails[loop++], callAPI)
-
-    })
+    },{});
 }
 
 const timeSave = () => {
@@ -1182,7 +1223,7 @@ const timeSave = () => {
 const connectionClose = (callback,bool) => {
     return new Promise((resolve,reject) => {
 
-        console.log(syncData.shop_no, insertData.createOrder.length, insertData.createOrderDetails.length, insertData.cancelOrder.length, insertData.cancelOrderDetails.length);
+        console.log(`createOrder: ${insertData.createOrder.length}, createOrderDetails:${insertData.createOrderDetails.length}, cancelOrder:${insertData.cancelOrder.length}, cancelOrderDetails:${insertData.cancelOrderDetails.length}, updateOrderDetails:${insertData.updateOrderDetails.length}`);
         console.log(new Date() + ' 종료');
         console.log('=====================================================================');
 
@@ -1200,11 +1241,11 @@ const worker = async (sync,callback,bool) => {
     console.log('=====================================================================');
     console.log(new Date() + ' 시작');
     console.time();
-
-    //초기화
+    
     syncData.shop_no = sync.shop_no;
     syncData.access_token = sync.access_token;
 
+    //초기화
     insertData.createOrderCount = 0;
     insertData.createOrder = [];
     insertData.createOrderDetails = [];
@@ -1212,24 +1253,28 @@ const worker = async (sync,callback,bool) => {
     insertData.cancelOrderCount = 0;
     insertData.cancelOrder = [];
     insertData.cancelOrderDetails = [];
+    insertData.updateOrderDetails = [];
 
     await lastCreateTimeTo();
     const success1 = await createOrder(); //pay_date 기준
-    const success2 = await cancelCompleteOrder(); // cancel_complete_date 기준
 
     if ( !success1 ) {
         await connectionClose(callback,bool);
         return;
     }
 
+    insertData.createOrder.length != 0 && await insertOrder();
+    insertData.createOrderDetails.length != 0 && await insertOrderDetails();
+    
+    const success2 = await cancelCompleteOrder(); // cancel_complete_date 기준
+
     if ( !success2 ) {
         await connectionClose(callback,bool);
         return;
     }
 
-    insertData.createOrder.length != 0 && await insertOrder();
-    insertData.createOrderDetails.length != 0 && await insertOrderDetails();
     insertData.cancelOrder.length != 0 && await upsertOrder();
+    insertData.updateOrderDetails.length != 0 && await updateOrderDetails();
     insertData.cancelOrderDetails.length != 0 && await upsertOrderDetails();
 
     await timeSave();
