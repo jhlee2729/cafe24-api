@@ -32,7 +32,7 @@ const insertData = {
     cancelOrder: [],
     cancelOrderDetails: [],
     updateOrderDetails: [],
-
+    updateReceiverOrder: []
 }
 
 const execute = (sql,callback,data = {})=>{
@@ -1193,6 +1193,113 @@ const databaseOrderDetailsUpsert = (details, callback) => {
     },{});
 }
 
+// ### 13 주문수집 updatereceiver_date 기준(수령자정보 수정일) - updateReceiverOrder
+const updateReceiverOrder = () => {
+    return new Promise((resolve,reject) => {
+
+        let offset = 0; // 최대 15000
+        let limit = 1000;
+
+        // orderList - order, detail[items] 포함
+        const getOrder = () => {
+            axios({
+                method : 'GET',
+                url : `https://jolsejolse.cafe24api.com/api/v2/admin/orders?`,
+                headers: {
+                    "Authorization": `Bearer ${syncData.access_token}`,
+                    "Content-Type" : `application/json`
+                },
+                params:{
+                    shop_no: `${syncData.shop_no}`,
+                    start_date: contents.start_date,
+                    end_date: contents.end_date,
+                    date_type:'updatereceiver_date',
+                    offset:offset,
+                    limit:limit,
+                    embed: 'receivers',
+                    order_status :'N00,N10,N20,N21,N22,C00,C10,C34,C36,C47,C48,C49,C40'
+                  }
+    
+            }).then((response) => {
+
+                if (response.data.orders.length > 0) {
+
+                    insertData.updateReceiverOrder = insertData.updateReceiverOrder.concat(response.data.orders);
+
+                    if ( response.data.orders.length >= 1000) {
+                        offset += limit;
+                        getOrder();
+                        
+                    } else {
+                        resolve(true);
+                    }
+
+                } else {
+                    resolve(true);
+                }
+    
+            }).catch((err) => {
+                error_hook(syncData.shop_no, err,(e,res) => {
+                    console.log("updateReceiverOrder 에러", err);
+                    resolve(false);
+                });
+            });
+        }
+        getOrder();
+    })
+}
+
+// #14 updateOrder
+const updateOrder = () => {
+    return new Promise((resolve,reject) => {
+
+        let loop = 0;
+        const callAPI = () => {
+            insertData.updateReceiverOrder.length == loop ? 
+            resolve() :
+            databaseOrderUpdate(insertData.updateReceiverOrder[loop++], callAPI);
+        }
+        databaseOrderUpdate(insertData.updateReceiverOrder[loop++], callAPI)
+
+    })
+}
+
+// #15 databaseOrderUpdate
+const databaseOrderUpdate = (order,callback) => {
+
+    execute(`UPDATE app_jolse_order
+        SET receivers_name="${order.receivers[0].name.replace(/"/g, '\\"') || ''}",
+            receivers_name_furigana="${order.receivers[0].name_furigana.replace(/"/g, '\\"') || ''}",
+            receivers_phone="${order.receivers[0].phone}",
+            receivers_zipcode="${order.receivers[0].zipcode}",
+            receivers_address1="${order.receivers[0].address1.replace(/"/g, '\\"') || ''}",
+            receivers_address2="${order.receivers[0].address2.replace(/"/g, '\\"') || ''}",
+            receivers_address_state="${order.receivers[0].address_state}",
+            receivers_address_city="${order.receivers[0].address_city}",
+            receivers_address_street="${order.receivers[0].address_street}",
+            receivers_address_full="${order.receivers[0].address_full.replace(/"/g, '\\"') || ''}",
+            receivers_name_en="${order.receivers[0].name_en}",
+            receivers_country_code="${order.receivers[0].country_code}",
+            receivers_country_name="${order.receivers[0].country_name}",
+            receivers_country_name_en="${order.receivers[0].country_name_en}",
+            receivers_shipping_message="${order.receivers[0].shipping_message}",
+            receivers_wished_delivery_date="${order.receivers[0].wished_delivery_date}",
+            receivers_shipping_code="${order.receivers[0].shipping_code}"
+        WHERE order_id="${order.order_id}"`,
+
+        (err,rows)=>{
+        
+            if ( err ) {
+                error_hook(syncData.shop_no,err,(e,res) => {
+                    console.log("databaseOrderUpdate", err)
+                    throw err;
+                });
+            } else {
+                callback();
+            }
+        },{});
+}
+
 const timeSave = () => {
     return new Promise((resolve,reject) => {
 
@@ -1223,7 +1330,7 @@ const timeSave = () => {
 const connectionClose = (callback,bool) => {
     return new Promise((resolve,reject) => {
 
-        console.log(`createOrder: ${insertData.createOrder.length}, createOrderDetails:${insertData.createOrderDetails.length}, cancelOrder:${insertData.cancelOrder.length}, cancelOrderDetails:${insertData.cancelOrderDetails.length}, updateOrderDetails:${insertData.updateOrderDetails.length}`);
+        console.log(`createOrder: ${insertData.createOrder.length}, createOrderDetails:${insertData.createOrderDetails.length}, cancelOrder:${insertData.cancelOrder.length}, cancelOrderDetails:${insertData.cancelOrderDetails.length}, updateOrderDetails:${insertData.updateOrderDetails.length}, updateReceiverOrder:${insertData.updateReceiverOrder.length}`);
         console.log(new Date() + ' 종료');
         console.log('=====================================================================');
 
@@ -1254,6 +1361,7 @@ const worker = async (sync,callback,bool) => {
     insertData.cancelOrder = [];
     insertData.cancelOrderDetails = [];
     insertData.updateOrderDetails = [];
+    insertData.updateReceiverInfo = [];
 
     await lastCreateTimeTo();
     const success1 = await createOrder(); //pay_date 기준
@@ -1276,6 +1384,15 @@ const worker = async (sync,callback,bool) => {
     insertData.cancelOrder.length != 0 && await upsertOrder();
     insertData.updateOrderDetails.length != 0 && await updateOrderDetails();
     insertData.cancelOrderDetails.length != 0 && await upsertOrderDetails();
+
+    const success3 = await updateReceiverOrder(); // updatereceiver_date 기준
+
+    if ( !success3 ) {
+        await connectionClose(callback,bool);
+        return;
+    }
+
+    insertData.updateReceiverOrder.length != 0 && await updateOrder();
 
     await timeSave();
     await connectionClose(callback,bool);
