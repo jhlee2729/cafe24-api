@@ -1361,7 +1361,7 @@ const worker = async (sync,callback,bool) => {
     insertData.cancelOrder = [];
     insertData.cancelOrderDetails = [];
     insertData.updateOrderDetails = [];
-    insertData.updateReceiverInfo = [];
+    insertData.updateReceiverOrder = [];
 
     await lastCreateTimeTo();
     const success1 = await createOrder(); //pay_date 기준
