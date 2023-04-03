@@ -3,16 +3,8 @@ const env = require('./env').env;
 const pool = require('./connection-pool').createPool(config[env].database);
 const axios = require('axios');
 const dateformat = require('dateformat');
-const status = require('./jolse_config');
+const status = config[env].jolse_api;
 const error_hook = require('./slackhook');
-
-// * Order
-// market_order_info 삭제 - postman : market_order_info, axios: 키값 없음
-
-// * Details
-// 컬럼명 수정 actual_payment_amount->payment_amount,  postman:actual_payment_amount, axios:payment_amount
-// 컬럼명 수정 tax_amount->tax_rate,postman: tax_amount, axios:tax_rate
-// order_price_amount 추가 (postman : X, axios:O )
 
 const syncData = {
     shop_no: '',
