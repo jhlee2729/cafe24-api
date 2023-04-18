@@ -16,3 +16,4 @@
     - order_status = N00,N10,N20,N21,N22,C00,C10,C34,C36,C47,C48,C49
 3. getAccessToken - 액세스 토큰 발급
 4. refresh AccessToken - 액세스 토큰 재발급
+5. getProductList
