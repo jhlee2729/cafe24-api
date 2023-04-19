@@ -1,6 +1,4 @@
 require('dotenv').config();
-const btoa = require('btoa');
-const axios = require('axios');
 
 // code 발급
 const getCodeURL = () => {
