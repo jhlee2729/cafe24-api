@@ -26,3 +26,5 @@ jolse-running-item.js 실행, jolse-item-api.js
 2. Retrieve a product resource 
   - 상품 상세 정보 수집 (상품 번호당 1개씩 조회)
   - embed = variants,benefits,discountprice,seo,inventories
+
+  [Cafe24 API](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-orders)
