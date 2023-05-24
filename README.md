@@ -1,8 +1,8 @@
 # cafe24-api
 
-- Jolse - Order
+### Jolse - Order
 - jolse-running.js 실행, jolse-api.js
-1. Retrieve a list of orders
+1. Retrieve a list of orders   
     1.1 get order
     - date_type = pay_date
     - embed = items,receivers,buyer,cancellation
@@ -19,9 +19,9 @@
 4. refresh AccessToken - 액세스 토큰 재발급
 5. getProductList
 
-- Jolse - Product
+### Jolse - Product
 jolse-running-item.js 실행, jolse-item-api.js
-1. Retrieve a list of products 
+1. Retrieve a list of products   
   1.1 product_no 수집
 2. Retrieve a product resource 
   - 상품 상세 정보 수집 (상품 번호당 1개씩 조회)
