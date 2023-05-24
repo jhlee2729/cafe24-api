@@ -3,7 +3,7 @@ const axios = require('axios');
 
 // getProductList
 const getProductList = () => {
-    console.log("",process.env.ACCESS_TOKEN)
+    
     axios({
         method: 'GET',
         url : `https://${process.env.ADMIN_ID}.cafe24api.com/api/v2/admin/products`,
