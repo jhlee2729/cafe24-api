@@ -374,7 +374,7 @@ const databaseOrderDetailsInsert = (details, callback) => {
         option_id: details.option_id,
         option_value: details.option_value,
         additional_option_value: details.additional_option_value,
-        product_name: details.product_name,
+        product_name: remove_emoji(details.product_name),
         product_price: details.product_price,
         option_price: details.option_price,
         additional_discount_price: details.additional_discount_price,
@@ -1052,7 +1052,7 @@ const databaseOrderDetailsUpsert = (details, callback) => {
         "${details.option_id}",
         "${details.option_value}",
         "${details.additional_option_value}",
-        "${details.product_name}",
+        "${remove_emoji(details.product_name)}",
         ${details.product_price},
         ${details.option_price},
         ${details.additional_discount_price},
@@ -1339,7 +1339,6 @@ const worker = async (sync,callback,bool) => {
   
     console.log('=====================================================================');
     console.log(new Date() + ' 시작');
-    console.time();
     
     syncData.shop_no = sync.shop_no;
     syncData.access_token = sync.access_token;
