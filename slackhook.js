@@ -1,7 +1,7 @@
 const Slack = require('slack-node');
-const webhookUri = "https://hooks.slack.com/services/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";
+require('dotenv').config();
+const webhookUri = process.env.WEB_HOOK_URI;
 const slack = new Slack();
-
 slack.setWebhook(webhookUri);
 
 const send = async(country, message, callback) => {
