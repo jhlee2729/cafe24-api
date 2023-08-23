@@ -3,7 +3,7 @@ const env = require('./env').env;
 const pool = require('./connection-pool').createPool(config[env].database);
 const axios = require('axios');
 const dateformat = require('dateformat');
-const status = config[env].jolse_api;
+const status = config[env].jolse_api.pay_order;
 const error_hook = require('./slackhook');
 
 const syncData = {
