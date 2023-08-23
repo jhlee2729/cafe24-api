@@ -27,4 +27,11 @@ jolse-running-item.js 실행, jolse-item-api.js
   - 상품 상세 정보 수집 (상품 번호당 1개씩 조회)
   - embed = variants,benefits,discountprice,seo,inventories
 
-  [Cafe24 API](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-orders)
+### Jolse - Refund Order
+- jolse-refund-running.js 실행, jolse-refund-api.js
+1. Retrieve a list of refunds
+  1.1 get order
+  - date_type = refund_date
+
+[Cafe24 API - list order](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-orders)   
+[Cafe24 API - list refunds](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-refunds)
