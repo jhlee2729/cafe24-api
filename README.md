@@ -33,5 +33,11 @@ jolse-running-item.js 실행, jolse-item-api.js
   1.1 get order
   - date_type = refund_date
 
+### Jolse - Payment Order
+- jolse-payment-running.js 실행, jolse-payment-api.js
+1. Retrieve a list of refunds
+  1.1 get order
+  - date_type = payment_date
+
 [Cafe24 API - list order](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-orders)   
 [Cafe24 API - list refunds](https://developers.cafe24.com/docs/ko/api/admin/#retrieve-a-list-of-refunds)
